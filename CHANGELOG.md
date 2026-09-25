@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.1 — Windows package identity (2026-09-25)
+
+- Reenter Desktop launchers in the registered MSIX package before constructing
+  the profile environment. Recent app builds reject an unpackaged core process.
+- Preserve profile arguments across activation; passing environment variables
+  directly to package activation does not preserve the selected account.
+- Keep existing profiles and sandbox settings. Desktop support remains experimental.
+- Recommend a profile directory outside AppData for new installations so packaged
+  and ordinary launches do not resolve different virtualized stores.
+
 ## 0.3.0 — explicit full-stop preview
 
 - Add a separate confirmed close shortcut and read-only process-tree preview.

@@ -14,8 +14,10 @@ import tomllib
 import uuid
 from pathlib import Path
 
+import msix
+
 CONFIG = Path(__file__).resolve().parent / "dual.local.json"
-VERSION = "0.3.0"
+VERSION = "0.3.1"
 WINDOWS_RESERVED = {"CON", "PRN", "AUX", "NUL", *(f"COM{i}" for i in range(1, 10)), *(f"LPT{i}" for i in range(1, 10))}
 DROP_PREFIXES = ("CODEX_", "OPENAI_", "AZURE_OPENAI_")
 
@@ -292,6 +294,19 @@ def main(argv: list[str] | None = None) -> int:
                 if args.command == "plan" or args.dry_run:
                     print(json.dumps(details, indent=2))
                 else:
+                    if os.name == "nt" and args.surface == "desktop" and not msix.has_package_identity():
+                        # Package activation drops env. Reenter first; clean_env
+                        # must run inside the package to select the right account.
+                        forwarded = list(sys.argv[1:] if argv is None else argv)
+                        try:
+                            msix.relaunch_with_package(
+                                Path(__file__).resolve().with_name("desktop_launch.pyw"),
+                                ["--reenter-launch", str(Path.cwd()), *forwarded],
+                            )
+                        except (RuntimeError, subprocess.SubprocessError, ValueError) as exc:
+                            raise DualError(str(exc)) from exc
+                        print(f"Requested {args.alias} (desktop) launch with Windows package identity.")
+                        return 0
                     profile = data["profiles"][args.alias]
                     for path in (profile["home"], profile["user_data"]):
                         safe_path(path).mkdir(parents=True, exist_ok=True)

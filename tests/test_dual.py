@@ -20,6 +20,24 @@ class DualTests(unittest.TestCase):
         self.patch = mock.patch.object(dual, "CONFIG", self.config)
         self.patch.start()
         self.addCleanup(self.patch.stop)
+        self.identity = mock.patch.object(dual.msix, "has_package_identity", return_value=True)
+        self.identity.start()
+        self.addCleanup(self.identity.stop)
+
+    @unittest.skipUnless(os.name == "nt", "Windows package activation")
+    def test_unpacked_desktop_launch_reenters_before_building_profile_env(self):
+        self.configured()
+        exe = self.base / "ChatGPT.exe"
+        exe.touch()
+        with mock.patch.object(dual.msix, "has_package_identity", return_value=False), \
+             mock.patch.object(dual.msix, "relaunch_with_package") as reenter, \
+             mock.patch.object(dual, "clean_env", side_effect=AssertionError("Too early")), \
+             mock.patch.object(dual.subprocess, "Popen") as spawn:
+            args = ["launch", "alt", "--exe", str(exe), "--", "--flag", "two words"]
+            self.assertEqual(self.invoke(*args)[0], 0)
+        reenter.assert_called_once_with(Path(dual.__file__).resolve().with_name("desktop_launch.pyw"),
+                                        ["--reenter-launch", str(Path.cwd()), *args])
+        spawn.assert_not_called()
 
     def invoke(self, *args):
         stdout, stderr = io.StringIO(), io.StringIO()

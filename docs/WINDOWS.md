@@ -18,6 +18,25 @@ does not assert that every client version reproduces the original issue.
 
 ## App launch denied after an update
 
+### "The process has no package identity"
+
+Observed after updating to app package 26.924.1866.0: directly starting
+`app/ChatGPT.exe` from an ordinary desktop launcher failed during startup.
+The launcher now reenters through Windows `Invoke-CommandInDesktopPackage`,
+then sets `CODEX_HOME` and the Electron profile before starting the app.
+Setting those variables before invoking the Windows cmdlet is insufficient:
+the activated process does not inherit that environment and can open the
+main account instead. `-PreventBreakaway` keeps the launcher and its child
+app in the package context. No administrator request or sandbox edit is added.
+
+This uses a Windows debugging/compatibility facility, not an official Codex
+multi-account API. Microsoft guarantees package identity and virtualized
+resource access, not full equivalence to normal app activation. Keep Desktop
+support experimental and verify the account, history and task permissions
+after app updates. See [Microsoft's cmdlet documentation](https://learn.microsoft.com/en-us/powershell/module/appx/invoke-commandindesktoppackage).
+
+### Executable discovery and WinError 5
+
 Run `python dual.py plan alt` again. Auto-discovery does not cache versioned package paths. If you supplied `--exe`, update it to the installed package's actual `app/ChatGPT.exe`. The `Codex.exe` updater is not the app entry point in the supported layout.
 
 This entry-point correction comes from [ai-multi-instance commit 4a977e5](https://github.com/Zoltak-Dev/ai-multi-instance/commit/4a977e5c2232f719fde98e023ba71f262ed7c7aa). It was already present in Codex Dual's first preview; it is not a new UAC fix invented by this project. `WinError 5` has other possible causes, so the message alone does not justify running as administrator or changing ACLs.

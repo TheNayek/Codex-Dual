@@ -1,6 +1,6 @@
 # Two Codex accounts. Two desktop shortcuts.
 
-[![Offline tests](https://github.com/TheNayek/Codex-Dual/actions/workflows/test.yml/badge.svg)](https://github.com/TheNayek/Codex-Dual/actions/workflows/test.yml) · v0.3.0 · [Español](README.es.md) · [Codex Economy](https://github.com/TheNayek/Codex-Economy)
+[![Offline tests](https://github.com/TheNayek/Codex-Dual/actions/workflows/test.yml/badge.svg)](https://github.com/TheNayek/Codex-Dual/actions/workflows/test.yml) · v0.3.1 · [Español](README.es.md) · [Codex Economy](https://github.com/TheNayek/Codex-Economy)
 
 Keep opening your main Codex app normally. Open the second account from its own
 desktop shortcut. Codex Dual separates Codex homes and Electron data, prepares
@@ -50,6 +50,18 @@ No terminal is needed each time. The shortcut discovers the installed app on eac
 launch, avoiding a stale versioned path after updates. Keep the checkout and
 Python in their installed locations; recreate the shortcut if you move either.
 
+### Already installed? Update after the package-identity startup error
+
+Codex app update `26.924.1866.0` exposed a startup failure in direct Desktop
+launches: **"The process has no package identity"**. Version 0.3.1 enters the
+registered Windows package before selecting the secondary profile.
+
+Update the same checkout your shortcut uses; keep `dual.local.json` and all
+profile folders. A clean checkout can use `git pull --ff-only`. Review local
+changes first; do not reset or reinstall accounts. Existing Codex Dual shortcuts
+pick up the fix from that checkout. Shortcuts belonging to another launcher need
+their own compatibility update. See [update and validation steps](INSTALL.md#updating-an-existing-installation).
+
 ## Windows setup and UAC
 
 The recommended setup explicitly selects `windows.sandbox = "unelevated"` in
@@ -69,7 +81,7 @@ Run these once from the cloned repository. Follow [INSTALL.md](INSTALL.md) to
 configure and verify both homes before first launch:
 
 ```powershell
-python dual.py init --root "$env:LOCALAPPDATA\CodexDualProfiles"
+python dual.py init --root "$env:USERPROFILE\.codex-dual\profiles"
 python dual.py plan alt
 # Apply the sandbox setup in INSTALL.md, then:
 python dual.py doctor

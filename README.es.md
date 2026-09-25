@@ -1,6 +1,6 @@
 # Dos cuentas de Codex. Dos accesos directos.
 
-v0.3.0 · [English](README.md) · [Origen y atribución](docs/PROVENANCE.md)
+v0.3.1 · [English](README.md) · [Origen y atribución](docs/PROVENANCE.md)
 
 Abre tu cuenta principal como siempre y la segunda desde su propio acceso
 directo. Codex Dual separa los datos de ambas cuentas y prepara la instalación
@@ -43,6 +43,19 @@ No hace falta escribir comandos cada vez. El acceso usa un lanzador sin consola
 y busca el ejecutable instalado en cada apertura. Mantén la carpeta del repo y
 Python donde los instalaste; si los mueves, vuelve a crear el acceso.
 
+### Si ya lo instalaste: error de identidad del paquete
+
+La actualización de Codex `26.924.1866.0` provocó fallos en el arranque directo:
+**«El proceso no tiene una identidad del paquete»**. La versión 0.3.1 entra en
+el contexto del paquete de Windows antes de seleccionar el perfil secundario.
+
+Actualiza la misma carpeta del repo que utiliza tu acceso. Conserva
+`dual.local.json` y todas las carpetas de perfiles. Si el checkout está limpio,
+puedes usar `git pull --ff-only`; si tienes cambios locales, revísalos primero.
+No hace falta reinstalar cuentas. Los accesos de Codex Dual recogen la corrección
+al actualizar esa carpeta; los de otros lanzadores necesitan su propia adaptación.
+[Pasos de actualización y comprobación](INSTALL.md#updating-an-existing-installation).
+
 ## La configuración para evitar el problema de UAC
 
 El flujo recomendado establece `windows.sandbox = "unelevated"` en **ambas
@@ -62,7 +75,7 @@ Desde el repo clonado, se ejecutan una vez. Sigue [INSTALL.md](INSTALL.md) para
 configurar y comprobar ambas cuentas antes de abrirlas:
 
 ```powershell
-python dual.py init --root "$env:LOCALAPPDATA\CodexDualProfiles"
+python dual.py init --root "$env:USERPROFILE\.codex-dual\profiles"
 python dual.py plan alt
 # Aplicar el ajuste del sandbox de INSTALL.md y después:
 python dual.py doctor

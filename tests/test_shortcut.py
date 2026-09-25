@@ -112,6 +112,19 @@ class ShortcutTests(unittest.TestCase):
         with mock.patch.object(module.dual, "main", return_value=0) as launch:
             self.assertEqual(module.main(["alt"]), 0)
             launch.assert_called_once_with(["launch", "alt"])
+        with mock.patch.object(module.dual, "main", return_value=0) as launch, \
+             mock.patch.object(module.dual.msix, "has_package_identity", return_value=True), \
+             mock.patch.object(module.os, "chdir") as chdir:
+            args = ["launch", "alt", "--exe", "C:/Program Files/Codex/ChatGPT.exe", "--", "two words"]
+            directory = self.base / "project with spaces"
+            self.assertEqual(module.main(["--reenter-launch", str(directory), *args]), 0)
+            chdir.assert_called_once_with(directory)
+            launch.assert_called_once_with(args)
+        with mock.patch.object(module.dual, "main") as launch, \
+             mock.patch.object(module.dual.msix, "has_package_identity", return_value=False), \
+             mock.patch.object(module.ctypes, "windll", create=True):
+            self.assertEqual(module.main(["--reenter-launch", str(self.base), "launch", "alt"]), 1)
+            launch.assert_not_called()
         fake_user32 = mock.Mock()
         with mock.patch.object(module.dual, "main", return_value=1), \
              mock.patch.object(module.ctypes, "windll", create=True) as windll:
