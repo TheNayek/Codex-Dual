@@ -13,4 +13,11 @@ Codex Dual is a separately written Python CLI with its own profile registry, val
 
 The inspected local upstream checkout had no tracked modifications, and its launch correction was already an upstream commit. The personal sandbox mitigation lived in Codex configuration and incident records, not in that launcher patch. Personal records and profiles are intentionally not distributed.
 
+The maintainer reports successful everyday use of two accounts with that local
+configuration. The inspected desktop shortcut still launches the reference
+project's `launcher.pyw`. This is real-world experience supporting the shared
+mechanism and the local mitigation; it is not an end-to-end test of the publicly
+distributed `dual.py`. That distinction describes the evidence, not a claim
+that the maintainer's working setup is broken.
+
 The repository is independently maintained rather than linked through GitHub's fork network. If future work incorporates upstream code, preserve its applicable copyright and MIT permission notice alongside that code and identify the adaptation here. A fresh Git history does not remove attribution or licensing obligations.
