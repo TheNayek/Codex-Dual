@@ -8,6 +8,31 @@ Codex Dual is a small, dependency-free Python launcher for separate Codex profil
 
 > Install Codex Dual by following https://github.com/TheNayek/Codex-Dual/blob/main/INSTALL.md . Keep my current Codex account and settings untouched. Show me the planned paths before launching anything.
 
+## Compared with ai-multi-instance
+
+Codex Dual is an alternative CLI, not a feature-complete upgrade to
+[ai-multi-instance](https://github.com/Zoltak-Dev/ai-multi-instance). Both use
+separate Codex and Electron data directories. The maintainer's existing desktop
+shortcut still uses that original launcher.
+
+| Capability | Original launcher | Codex Dual |
+| --- | --- | --- |
+| Open independent Codex profiles | Yes | Same core mechanism; live Desktop validation pending |
+| Interactive profile menu, desktop shortcut creation, rename/delete/close controls | Included | Not included |
+| Account usage display | Included | Not included; does not inspect authentication data |
+| Apps | Claude and Codex | Codex only |
+| Inspect a proposed launch and sandbox selector without launching | Different diagnostics/workflow | Explicit `plan` and read-only `doctor` |
+| Child environment | Inherits environment and overrides profile paths | Also removes inherited Codex/OpenAI provider variables |
+| Direct CLI launch | Primarily Desktop-oriented | Included, with child exit-status propagation |
+
+For someone already using the original successfully, there is no demonstrated
+reason to replace it wholesale. Dual's scripted workflow and diagnostics may
+be useful separately. Its environment filtering prevents accidental inherited
+provider settings, but also removes intentional provider overrides; it is a
+design tradeoff, not universal superiority. Neither launching mechanism alone
+fixes Codex's repeated elevated sandbox provisioning. The maintainer's mitigation
+was a separate sandbox configuration change; see [Windows guidance](docs/WINDOWS.md).
+
 **Quickstart (Windows PowerShell, Python 3.11+):**
 
 ```powershell

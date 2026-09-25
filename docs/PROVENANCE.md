@@ -2,7 +2,7 @@
 
 Codex Dual grew out of practical use of [Zoltak-Dev/ai-multi-instance](https://github.com/Zoltak-Dev/ai-multi-instance), an MIT-licensed launcher for Claude and Codex. Its author deserves credit for the dual-directory environment mechanism and Windows application entry point used here.
 
-Codex Dual is a separately written Python CLI with its own profile registry, validation, environment filtering, diagnostics, and tests. It does not distribute the upstream launcher, GUI, or source files. The shared mechanism is not presented as an original discovery.
+Codex Dual is a separately written Python CLI with its own profile registry, validation, environment filtering, diagnostics, and tests. It does not distribute the upstream launcher, interactive menu, or source files. The shared mechanism is not presented as an original discovery. See the [functional comparison](../README.md#compared-with-ai-multi-instance): this rewrite is not a feature-complete upgrade.
 
 | Contribution | Origin | Status in Codex Dual |
 | --- | --- | --- |

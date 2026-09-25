@@ -6,6 +6,29 @@ v0.1.1 · [English](README.md) · [Origen y atribución](docs/PROVENANCE.md)
 
 Codex Dual inicia perfiles separados de Codex con Python 3.11 o posterior, sin dependencias. Abre tu aplicación principal como siempre e inicia el perfil `alt` en paralelo. Cada perfil usa rutas distintas para `CODEX_HOME` y los datos de Electron. Inicia sesión en cada uno mediante la interfaz normal de Codex.
 
+## Diferencias respecto al lanzador original
+
+Codex Dual es una alternativa por comandos a
+[ai-multi-instance](https://github.com/Zoltak-Dev/ai-multi-instance), no una
+actualización que conserve todas sus funciones.
+
+| Función | Lanzador original | Codex Dual |
+| --- | --- | --- |
+| Cuentas separadas de Codex | Sí | Mismo mecanismo; validación real del nuevo lanzador pendiente |
+| Menú de perfiles y creación de accesos directos | Sí | No |
+| Renombrar, eliminar y cerrar perfiles | Sí | No |
+| Consultar consumo de las cuentas | Sí | No |
+| Aplicaciones | Claude y Codex | Solo Codex |
+| Plan previo y diagnóstico del selector del sandbox | Otro flujo y diagnósticos | Comandos `plan` y `doctor` |
+| Variables heredadas del proceso | Conserva el entorno y sustituye rutas | Además elimina variables Codex/OpenAI heredadas |
+
+Si ya usas el original y te funciona, no hay una mejora global demostrada que
+justifique reemplazarlo. Las comprobaciones y el flujo programable de Dual
+pueden servir por separado. El filtrado evita heredar opciones de proveedor por
+accidente, pero también elimina las que fueran intencionales. La mitigación de
+los avisos UAC del mantenedor estaba en la configuración del sandbox, no en un
+arreglo exclusivo de uno de estos lanzadores.
+
 **Instalación con Codex:** pega este mensaje en una tarea de Codex:
 
 > Instala Codex Dual siguiendo https://github.com/TheNayek/Codex-Dual/blob/main/INSTALL.md . Conserva intacta mi cuenta y configuración actual. Muéstrame las rutas previstas antes de iniciar nada.
