@@ -1,0 +1,9 @@
+dual.local.json*
+dual.tmp
+dist/
+.env
+.env.*
+__pycache__/
+*.pyc
+tests/tmp*/
+tests/fixture-*/
