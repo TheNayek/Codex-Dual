@@ -15,7 +15,7 @@ import uuid
 from pathlib import Path
 
 CONFIG = Path(__file__).resolve().parent / "dual.local.json"
-VERSION = "0.1.1"
+VERSION = "0.2.0"
 WINDOWS_RESERVED = {"CON", "PRN", "AUX", "NUL", *(f"COM{i}" for i in range(1, 10)), *(f"LPT{i}" for i in range(1, 10))}
 DROP_PREFIXES = ("CODEX_", "OPENAI_", "AZURE_OPENAI_")
 

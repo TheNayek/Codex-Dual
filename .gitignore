@@ -1,4 +1,5 @@
 dual.local.json*
+dual.installation.local.json
 dual.tmp
 dist/
 .env
@@ -7,3 +8,4 @@ __pycache__/
 *.pyc
 tests/tmp*/
 tests/fixture-*/
+tests/shortcut-fixture-*/

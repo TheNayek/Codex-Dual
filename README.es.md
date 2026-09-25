@@ -1,57 +1,73 @@
-# Dos cuentas de Codex. Dos sesiones independientes de la aplicación.
+# Dos cuentas de Codex. Dos accesos directos.
 
-v0.1.1 · [English](README.md) · [Origen y atribución](docs/PROVENANCE.md)
+v0.2.0 · [English](README.md) · [Origen y atribución](docs/PROVENANCE.md)
 
-`doctor` analiza el `config.toml` de cada perfil registrado y muestra únicamente el selector del sandbox, sin cambiar ajustes. Si aparecen avisos UAC repetidos o un error al abrir la aplicación tras actualizarla, consulta la [guía de Windows](docs/WINDOWS.md). Son problemas distintos: el ejecutable correcto ya se usaba en la primera versión; la mitigación del sandbox procede de una investigación separada de la configuración local. El diagnóstico no verifica la configuración efectiva ni garantiza eliminar UAC.
+Abre tu cuenta principal como siempre y la segunda desde su propio acceso
+directo. Codex Dual separa los datos de ambas cuentas y prepara la instalación
+para el uso diario. El flujo recomendado incluye la configuración del sandbox
+que evitó los avisos UAC repetidos en la instalación del mantenedor.
+Requiere Python 3.11+, sin paquetes adicionales.
 
-Codex Dual inicia perfiles separados de Codex con Python 3.11 o posterior, sin dependencias. Abre tu aplicación principal como siempre e inicia el perfil `alt` en paralelo. Cada perfil usa rutas distintas para `CODEX_HOME` y los datos de Electron. Inicia sesión en cada uno mediante la interfaz normal de Codex.
+## Dale esto a Codex
 
-## Diferencias respecto al lanzador original
+> Instala Codex Dual siguiendo https://github.com/TheNayek/Codex-Dual/blob/main/INSTALL.md . Conserva mis cuentas y datos existentes. Configura las dos instalaciones de Codex con el sandbox sin elevación recomendado para evitar el problema de aprovisionamiento repetido, manteniendo los límites del workspace y las aprobaciones. Entiendo que tiene menor aislamiento que el modo elevado. Crea un acceso directo de escritorio para abrir la segunda cuenta con doble clic. Conserva los accesos que ya funcionen. Muéstrame los cambios previstos y verifica el resultado.
 
-Codex Dual es una alternativa por comandos a
-[ai-multi-instance](https://github.com/Zoltak-Dev/ai-multi-instance), no una
-actualización que conserve todas sus funciones.
+El [procedimiento de instalación](INSTALL.md) indica qué configurar, cómo
+comprobarlo y cómo deshacerlo. El agente hace ese ajuste autorizado una vez;
+el lanzador no cambia los permisos cada vez que abres Codex.
 
-| Función | Lanzador original | Codex Dual |
-| --- | --- | --- |
-| Cuentas separadas de Codex | Sí | Mismo mecanismo; validación real del nuevo lanzador pendiente |
-| Menú de perfiles y creación de accesos directos | Sí | No |
-| Renombrar, eliminar y cerrar perfiles | Sí | No |
-| Consultar consumo de las cuentas | Sí | No |
-| Aplicaciones | Claude y Codex | Solo Codex |
-| Plan previo y diagnóstico del selector del sandbox | Otro flujo y diagnósticos | Comandos `plan` y `doctor` |
-| Variables heredadas del proceso | Conserva el entorno y sustituye rutas | Además elimina variables Codex/OpenAI heredadas |
+## Uso diario
 
-Si ya usas el original y te funciona, no hay una mejora global demostrada que
-justifique reemplazarlo. Las comprobaciones y el flujo programable de Dual
-pueden servir por separado. El filtrado evita heredar opciones de proveedor por
-accidente, pero también elimina las que fueran intencionales. La mitigación de
-los avisos UAC del mantenedor estaba en la configuración del sandbox, no en un
-arreglo exclusivo de uno de estos lanzadores.
+- **Cuenta principal:** tu icono habitual de Codex.
+- **Segunda cuenta:** el nuevo acceso `Codex - alt`.
+- Inicia sesión por separado. No se copian credenciales.
 
-**Instalación con Codex:** pega este mensaje en una tarea de Codex:
+No hace falta escribir comandos cada vez. El acceso usa un lanzador sin consola
+y busca el ejecutable instalado en cada apertura. Mantén la carpeta del repo y
+Python donde los instalaste; si los mueves, vuelve a crear el acceso.
 
-> Instala Codex Dual siguiendo https://github.com/TheNayek/Codex-Dual/blob/main/INSTALL.md . Conserva intacta mi cuenta y configuración actual. Muéstrame las rutas previstas antes de iniciar nada.
+## La configuración para evitar el problema de UAC
 
-**Inicio rápido en Windows (PowerShell):**
+El flujo recomendado establece `windows.sandbox = "unelevated"` en **ambas
+cuentas** antes del uso diario. Fue necesario en el entorno del mantenedor para
+evitar que el aprovisionamiento del sandbox elevado interrumpiera el trabajo.
+No desactiva UAC ni habilita acceso total: conserva límites de archivos y las
+aprobaciones existentes, aunque ofrece menor aislamiento que el sandbox elevado.
+[Procedimiento y documentación oficial](docs/WINDOWS.md).
+
+No significa que todas las versiones necesiten esa mitigación ni que deban
+desaparecer las solicitudes legítimas de permisos. Si tu organización exige el
+modo elevado, hay que resolver esa compatibilidad antes de adoptar este flujo.
+
+## Comandos de instalación opcionales
+
+Desde el repo clonado, se ejecutan una vez. Sigue [INSTALL.md](INSTALL.md) para
+configurar y comprobar ambas cuentas antes de abrirlas:
 
 ```powershell
-git clone https://github.com/TheNayek/Codex-Dual.git
-cd Codex-Dual
 python dual.py init --root "$env:LOCALAPPDATA\CodexDualProfiles"
-python dual.py doctor
 python dual.py plan alt
-python dual.py launch alt
+# Aplicar el ajuste del sandbox de INSTALL.md y después:
+python dual.py doctor
+python shortcut.py alt
+python shortcut.py alt --apply
 ```
 
-`plan` muestra el ejecutable, los argumentos y las rutas sin crear carpetas del perfil. `launch` crea las carpetas del perfil aislado y abre un proceso. En Windows, Codex Dual busca el ejecutable real `app/ChatGPT.exe` del paquete Codex. Si hay ambigüedad, indica `--exe` con la ruta absoluta. `Codex.exe` es el actualizador y no sirve para iniciar la aplicación.
+`shortcut.py` muestra primero lo que va a crear; con `--apply` crea el acceso
+sin abrir Codex ni sobrescribir accesos existentes. `--desktop-dir` permite elegir
+otra carpeta existente. Los demás comandos siguen disponibles para diagnósticos
+o uso de CLI; consulta [README.md](README.md).
 
-El soporte de Codex Desktop es **experimental y depende de detalles internos** que pueden cambiar con una actualización. Esta versión no se ha validado iniciando una aplicación real. La separación de perfiles **no constituye aislamiento de seguridad del sistema operativo**: ambos procesos tienen los permisos de tu usuario.
+## Respecto al lanzador original
 
-Para registrar otro perfil: `python dual.py add trabajo --home RUTA_ABSOLUTA --user-data RUTA_ABSOLUTA`. Las rutas pueden corresponder a una instalación aislada existente; no se copian archivos ni credenciales. `list` enumera perfiles, `doctor` comprueba la configuración y `launch trabajo --dry-run` muestra el plan. `init` crea `dual.local.json`, ignorado por Git, sin sobrescribir uno existente.
+[ai-multi-instance](https://github.com/Zoltak-Dev/ai-multi-instance) también
+ofrece accesos directos y añade menú, gestión de perfiles, consumo y soporte
+para Claude. Dual se centra en Codex, accesos directos, instalación verificable
+y diagnóstico; no incluye ese menú ni la consulta de consumo. Si tu instalación
+actual ya funciona, puedes conservarla y aplicar las mismas pautas de sandbox.
 
-El proceso secundario conserva las variables habituales del sistema y elimina las variables heredadas `CODEX_*`, `OPENAI_*` y `AZURE_OPENAI_*` antes de establecer las rutas del perfil. Codex Dual no lee claves, cookies ni datos de uso, y no cambia la configuración global. No incluyas secretos en los argumentos: `plan` los muestra literalmente.
-
-También se puede iniciar la CLI donde haya un ejecutable directo: `python dual.py launch alt --surface cli --exe RUTA_ABSOLUTA -- --help`. En Linux y macOS, pasa un ejecutable explícito para Desktop y comprueba que la versión instalada respete las variables de aislamiento. Si la configuración de un perfil nuevo falla por permisos elevados en Windows, elige el modo **sin elevación** mediante el flujo normal de Codex; Codex Dual no altera UAC ni las opciones de seguridad.
-
-La CLI funciona en primer plano y devuelve su código de salida. En Windows, los lanzadores `.cmd` y `.bat` no se admiten: indica un `codex.exe` directo con `--exe`. Las pruebas sin conexión: `python -m unittest discover -s tests -v`. Usan rutas sintéticas y simulan el lanzamiento de procesos. El mecanismo se investigó con ayuda de [Zoltak-Dev/ai-multi-instance](https://github.com/Zoltak-Dev/ai-multi-instance), distribuido bajo MIT. Codex Dual es una implementación independiente limitada a Codex y no es un producto oficial de OpenAI.
+El mecanismo de separación y el ejecutable proceden de la investigación con ese
+proyecto MIT; la implementación de Dual se escribió por separado. El soporte
+Desktop depende de detalles internos y sigue siendo experimental. Las pruebas
+no inician Codex ni sustituyen comprobar ambas sesiones reales. Codex Dual no
+es un producto oficial de OpenAI.

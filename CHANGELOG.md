@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.0 — desktop setup preview
+
+- Make desktop shortcuts the recommended daily entry point; preview and create
+  them without overwriting existing shortcuts or pinning MSIX version paths.
+- Include the two-home unelevated sandbox mitigation in the agent installation
+  workflow, with the tradeoff explained, unrelated settings preserved, and undo
+  guidance. The launcher does not change security settings at startup.
+- Preserve existing working installations and shortcuts; no forced migration.
+
 ## 0.1.1 — 2026-09-25
 
 - Add read-only sandbox selector diagnostics without printing unrelated configuration or parser excerpts.

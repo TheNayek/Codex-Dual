@@ -2,6 +2,14 @@
 
 Diagnose the failing stage before changing anything.
 
+The recommended [Windows installation workflow](../INSTALL.md) includes the
+unelevated selector in both participating homes before daily use, because
+repeated elevated provisioning made the maintainer's two-account setup
+impractical. The README installation prompt explicitly authorizes this tradeoff.
+The installing agent preserves all unrelated permissions; the shortcut and
+launcher never rewrite those settings on each launch. This recommendation
+does not assert that every client version reproduces the original issue.
+
 | Symptom | What to check | What Codex Dual does |
 | --- | --- | --- |
 | App never opens; launch reports `WinError 5` | Installed application entry point and access to that executable | Discovers `app/ChatGPT.exe` again on each launch; rejects the `Codex.exe` updater |
@@ -30,7 +38,7 @@ The local mitigation was to use the supported `unelevated` sandbox for both affe
 sandbox = "unelevated"
 ```
 
-OpenAI documents `unelevated` as a fallback when elevated setup fails. It retains ACL-based filesystem restrictions but lacks the separate sandbox-user boundary and has weaker network isolation. See [official Windows sandbox troubleshooting](https://learn.chatgpt.com/docs/windows/windows-sandbox#troubleshooting-and-faq). This is a tradeoff, not a stronger default for every user. Codex Dual never selects it automatically.
+OpenAI documents `unelevated` as a fallback when elevated setup fails. It retains ACL-based filesystem restrictions but lacks the separate sandbox-user boundary and has weaker network isolation. See [official Windows sandbox troubleshooting](https://learn.chatgpt.com/docs/windows/windows-sandbox#troubleshooting-and-faq). This is a tradeoff, not a stronger default for every user. The recommended agent installation applies it with the user's informed instruction; launch commands do not select it automatically.
 
 Do not disable UAC, enable Full Access, share `.sandbox-secrets` between homes, reset sandbox users, or grant broad shell permissions to suppress prompts. Reconsider elevated mode after a relevant runtime fix and successful concurrent checks across fresh sessions; a single ready marker is insufficient evidence for the previously affected setup.
 

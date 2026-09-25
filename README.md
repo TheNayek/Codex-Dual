@@ -1,84 +1,102 @@
-# Two Codex accounts. Two independent app sessions.
+# Two Codex accounts. Two desktop shortcuts.
 
-[![Offline tests](https://github.com/TheNayek/Codex-Dual/actions/workflows/test.yml/badge.svg)](https://github.com/TheNayek/Codex-Dual/actions/workflows/test.yml) · v0.1.1 · [Español](README.es.md) · Companion to [Codex Economy](https://github.com/TheNayek/Codex-Economy)
+[![Offline tests](https://github.com/TheNayek/Codex-Dual/actions/workflows/test.yml/badge.svg)](https://github.com/TheNayek/Codex-Dual/actions/workflows/test.yml) · v0.2.0 · [Español](README.es.md) · [Codex Economy](https://github.com/TheNayek/Codex-Economy)
 
-Codex Dual is a small, dependency-free Python launcher for separate Codex profiles. Keep opening your main Codex app normally; launch an isolated `alt` beside it. Each launched profile receives its own `CODEX_HOME` and Electron user data path. Sign in to each profile independently through Codex.
+Keep opening your main Codex app normally. Open the second account from its own
+desktop shortcut. Codex Dual separates Codex homes and Electron data, prepares
+a windowless shortcut, and provides an agent installation workflow including
+the sandbox configuration used to avoid repeated UAC setup in the maintainer's
+two-account installation. Python 3.11+ is required; no extra packages are needed.
 
-**Install with Codex:** Copy and paste this prompt into a Codex task:
+## Give this to Codex
 
-> Install Codex Dual by following https://github.com/TheNayek/Codex-Dual/blob/main/INSTALL.md . Keep my current Codex account and settings untouched. Show me the planned paths before launching anything.
+> Install Codex Dual following https://github.com/TheNayek/Codex-Dual/blob/main/INSTALL.md . Preserve my existing accounts and data. Configure both participating Codex homes with the recommended unelevated sandbox to avoid the repeated elevated setup issue, preserving workspace boundaries and approval settings. I understand this has weaker isolation than the elevated sandbox. Create a desktop shortcut for the second account so I can open it with a double-click. Keep existing working shortcuts. Show the intended changes and verify the result.
 
-## Compared with ai-multi-instance
+The [installation runbook](INSTALL.md) covers both homes, the sandbox selector,
+checks and undo. The launcher itself does not rewrite security settings: your
+installing agent applies the authorized configuration change once.
 
-Codex Dual is an alternative CLI, not a feature-complete upgrade to
-[ai-multi-instance](https://github.com/Zoltak-Dev/ai-multi-instance). Both use
-separate Codex and Electron data directories. The maintainer's existing desktop
-shortcut still uses that original launcher.
+## Daily use
 
-| Capability | Original launcher | Codex Dual |
-| --- | --- | --- |
-| Open independent Codex profiles | Yes | Same core mechanism; live Desktop validation pending |
-| Interactive profile menu, desktop shortcut creation, rename/delete/close controls | Included | Not included |
-| Account usage display | Included | Not included; does not inspect authentication data |
-| Apps | Claude and Codex | Codex only |
-| Inspect a proposed launch and sandbox selector without launching | Different diagnostics/workflow | Explicit `plan` and read-only `doctor` |
-| Child environment | Inherits environment and overrides profile paths | Also removes inherited Codex/OpenAI provider variables |
-| Direct CLI launch | Primarily Desktop-oriented | Included, with child exit-status propagation |
+- **Main account:** your existing Codex icon.
+- **Second account:** the new `Codex - alt` desktop shortcut.
+- Sign in separately in each instance. No credentials are copied.
 
-For someone already using the original successfully, there is no demonstrated
-reason to replace it wholesale. Dual's scripted workflow and diagnostics may
-be useful separately. Its environment filtering prevents accidental inherited
-provider settings, but also removes intentional provider overrides; it is a
-design tradeoff, not universal superiority. Neither launching mechanism alone
-fixes Codex's repeated elevated sandbox provisioning. The maintainer's mitigation
-was a separate sandbox configuration change; see [Windows guidance](docs/WINDOWS.md).
+No terminal is needed each time. The shortcut discovers the installed app on each
+launch, avoiding a stale versioned path after updates. Keep the checkout and
+Python in their installed locations; recreate the shortcut if you move either.
 
-**Quickstart (Windows PowerShell, Python 3.11+):**
+## Windows setup and UAC
+
+The recommended setup explicitly selects `windows.sandbox = "unelevated"` in
+both homes. This was necessary in the maintainer's environment to stop repeated
+elevated sandbox provisioning from disrupting work. It does **not** disable
+Windows UAC. It preserves bounded filesystem access and existing approval
+controls, but has weaker isolation than the elevated sandbox. See [the procedure
+and official guidance](docs/WINDOWS.md).
+
+This is a mitigation for the observed issue, not proof that every installation
+requires it or that every permission prompt should disappear. Organizations
+requiring elevated mode must resolve that compatibility constraint first.
+
+## Setup commands, if you prefer
+
+Run these once from the cloned repository. Follow [INSTALL.md](INSTALL.md) to
+configure and verify both homes before first launch:
 
 ```powershell
-git clone https://github.com/TheNayek/Codex-Dual.git
-cd Codex-Dual
 python dual.py init --root "$env:LOCALAPPDATA\CodexDualProfiles"
-python dual.py doctor
 python dual.py plan alt
-python dual.py launch alt
+# Apply the sandbox setup in INSTALL.md, then:
+python dual.py doctor
+python shortcut.py alt
+python shortcut.py alt --apply
 ```
 
-`plan` discovers the installed Codex Desktop executable via `Get-AppxPackage *Codex*` and displays the exact executable, arguments and profile paths. On Windows, the executable must be the app's `app/ChatGPT.exe`; `Codex.exe` is an updater entry point. Pass `--exe "C:\path\to\app\ChatGPT.exe"` if discovery is ambiguous. `launch` creates only the registered profile directories and starts a child process. `launch alt --dry-run` is equivalent to `plan alt`. No actual Codex launch or sign-in is performed by the project tests.
+Double-click the shortcut for daily use. `shortcut.py` previews by default,
+refuses overwrites, and accepts `--desktop-dir ABSOLUTE_DIRECTORY` for another
+existing folder. It does not start Codex during setup.
 
-Codex Desktop isolation depends on internal Electron behavior and is **experimental and version-sensitive**. It has not been validated here by launching a live installed app. It separates app data and sign-in state; it is **not an operating-system security boundary**. Both processes retain the permissions of your OS user. Updates may change the behavior; run `doctor` and `plan` after updates.
+`dual.py` also supports `list`, `add`, `plan`, and direct `launch`. Use
+`python dual.py add work --home ABSOLUTE_HOME --user-data ABSOLUTE_ELECTRON_DATA`
+to register existing isolated paths without moving data. Main/default paths,
+overlaps, symlinks and reparse points are rejected. CLI use is optional:
+`python dual.py launch alt --surface cli --exe ABSOLUTE_EXECUTABLE -- --help`.
+Windows `.cmd`/`.bat` shims are unsupported; use a direct CLI executable.
 
-## Other commands
+## Compared with the original launcher
 
-```text
-python dual.py list
-python dual.py add work --home C:\CodexProfiles\work\home --user-data C:\CodexProfiles\work\electron
-python dual.py plan work --surface desktop --exe C:\path\to\app\ChatGPT.exe
-python dual.py launch work --surface cli --exe C:\path\to\codex.exe -- --help
-```
+[ai-multi-instance](https://github.com/Zoltak-Dev/ai-multi-instance) offers an
+interactive profile menu, shortcuts, rename/delete/close controls, account usage,
+and support for Claude and Codex. Dual focuses on Codex, desktop shortcuts,
+inspectable setup and diagnostics. It does not include that menu, usage display,
+or profile rename/delete/close controls. A working installation does not need
+replacement to benefit from the documented sandbox setup.
 
-`add` registers paths, including existing isolated installations, without copying their contents. Paths must be absolute, distinct, and free of symlinks/reparse points. They cannot overlap each other, the user home itself, or common Codex paths (`~/.codex`, `%APPDATA%\Codex`, `%APPDATA%\ChatGPT`). Because Electron's default data path can vary by build, select a fresh directory and inspect the plan before launch. `init` creates an ignored local `dual.local.json` and refuses to overwrite it. It does not create any profile home. CLI launching uses `codex` on PATH if `--exe` is absent and is intended for platforms where a directly executable CLI binary is available. On Windows a `.cmd`/`.bat` shim is rejected; pass `--exe` to a direct `codex.exe` instead. The CLI runs in the foreground and returns its exit status. Desktop auto-discovery is Windows only; on Linux/macOS, use an explicit executable path and verify that the installed build honors these variables. Pass app arguments after `--`.
+Dual removes inherited `CODEX_*`, `OPENAI_*`, and `AZURE_OPENAI_*` environment
+variables before assigning profile paths. This avoids accidental provider
+inheritance but also removes intentional overrides. Neither launcher alone
+corrects sandbox provisioning: the configuration step matters.
 
-The child inherits ordinary OS environment variables but drops inherited `CODEX_*`, `OPENAI_*`, and `AZURE_OPENAI_*` values before setting the two profile paths. The tool never reads auth files, copies tokens, handles cookies, collects usage data, or changes global Codex settings. `plan` prints only paths and arguments. Avoid putting secrets in launch arguments because they are intentionally displayed.
+## Compatibility and checks
 
-If a newly created Codex home encounters elevated Windows setup problems, select Codex's supported **unelevated** mode for that profile through its normal setup flow. Codex Dual does not change sandbox or UAC settings automatically. Do not use it to weaken security controls.
-
-## Windows troubleshooting
-
-`doctor` parses each registered home's `config.toml` and reports only the sandbox selector, without changing settings. For repeated UAC/setup prompts, launch denial after an update, and restricted-token test failures, see [Windows troubleshooting](docs/WINDOWS.md). This carries forward lessons from the maintainer's two-account setup; it is not a runtime patch or a promise to eliminate UAC.
-
-## Development
+Desktop discovery and shortcuts are Windows-specific. Desktop isolation uses
+internal Electron behavior and remains experimental and version-sensitive.
+Separate profiles are not an OS security boundary. Other platforms can use the
+CLI or an explicit Desktop executable; verify the client honors those paths.
+Windows discovery uses `app/ChatGPT.exe`, not the `Codex.exe` updater.
 
 ```text
 python -m unittest discover -s tests -v
 ```
 
-Tests use synthetic paths and mocked process launch. The GitHub Actions matrix runs offline on Windows, Linux, and macOS with Python 3.11 and 3.13. No packages are installed.
+Tests use synthetic profiles. Windows shortcut checks create and inspect a real
+shortcut in a workspace fixture, not the actual desktop. They do not launch or
+sign into Codex. CI covers Windows, Linux and macOS with Python 3.11 and 3.13;
+Windows-only checks are skipped elsewhere. `doctor` reports configured selectors,
+not effective runtime overrides.
 
-## Acknowledgements
-
-The scoped `CODEX_HOME` plus `CODEX_ELECTRON_USER_DATA_PATH` mechanism, and the Windows `app/ChatGPT.exe` entry point, were researched with reference to [Zoltak-Dev/ai-multi-instance](https://github.com/Zoltak-Dev/ai-multi-instance) (MIT). Codex Dual is an independently written, Codex-only implementation and does not include code from that project. Thanks to its author for documenting the mechanism.
-
-Codex Dual is independent of OpenAI and is not an official Codex product.
-
-See [origin and scope](docs/PROVENANCE.md) for the upstream contributions, the separate local sandbox mitigation, and what is actually included.
+The environment mechanism and entry point were researched using
+[Zoltak-Dev/ai-multi-instance](https://github.com/Zoltak-Dev/ai-multi-instance)
+(MIT). This is a separately written implementation; see [origin and scope](docs/PROVENANCE.md).
+Codex Dual is independent of OpenAI.
