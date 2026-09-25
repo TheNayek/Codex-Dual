@@ -57,6 +57,20 @@ class ShortcutTests(unittest.TestCase):
             shortcut.build_plan("alt", self.desktop, python_executable=self.python)
         self.assertEqual(target.read_bytes(), b"original")
 
+    def test_close_shortcut_can_target_existing_launcher_without_registration(self):
+        old_profile = str(self.base / "existing-profile")
+        with mock.patch.object(dual, "load", side_effect=AssertionError("Must not read registration")):
+            plan = shortcut.build_plan("alt", self.desktop, python_executable=self.python,
+                                       action="close", user_data_dir=old_profile)
+        self.assertEqual(Path(plan["path"]).name, "Close Codex - alt.lnk")
+        self.assertIn("desktop_close.pyw", plan["arguments"])
+        self.assertIn("--user-data-dir", plan["arguments"])
+        self.assertIn("confirmation", plan["description"])
+        self.assertFalse(Path(plan["path"]).exists())
+        with self.assertRaises(dual.DualError):
+            shortcut.build_plan("alt", self.desktop, python_executable=self.python,
+                                user_data_dir=old_profile)
+
     def test_refuses_relative_desktop_and_missing_pythonw(self):
         with self.assertRaises(dual.DualError):
             shortcut.build_plan("alt", Path("Desktop"), python_executable=self.python)

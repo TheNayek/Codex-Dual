@@ -1,6 +1,6 @@
 # Two Codex accounts. Two desktop shortcuts.
 
-[![Offline tests](https://github.com/TheNayek/Codex-Dual/actions/workflows/test.yml/badge.svg)](https://github.com/TheNayek/Codex-Dual/actions/workflows/test.yml) · v0.2.0 · [Español](README.es.md) · [Codex Economy](https://github.com/TheNayek/Codex-Economy)
+[![Offline tests](https://github.com/TheNayek/Codex-Dual/actions/workflows/test.yml/badge.svg)](https://github.com/TheNayek/Codex-Dual/actions/workflows/test.yml) · v0.3.0 · [Español](README.es.md) · [Codex Economy](https://github.com/TheNayek/Codex-Economy)
 
 Keep opening your main Codex app normally. Open the second account from its own
 desktop shortcut. Codex Dual separates Codex homes and Electron data, prepares
@@ -21,6 +21,30 @@ installing agent applies the authorized configuration change once.
 - **Main account:** your existing Codex icon.
 - **Second account:** the new `Codex - alt` desktop shortcut.
 - Sign in separately in each instance. No credentials are copied.
+
+### When closing the window leaves background processes
+
+Closing a window is not always quitting the app. Codex supports staying resident
+after its last window closes ([official changelog](https://learn.chatgpt.com/docs/changelog)).
+The maintainer reports that tray exit stops the main instance, while the secondary
+can remain running. Dual provides a separate **Close Codex - alt** shortcut to
+avoid selecting processes manually in Task Manager.
+
+```text
+python shortcut.py alt --action close
+python shortcut.py alt --action close --apply
+```
+
+After saving work, double-click that shortcut and confirm. This is an explicit
+**forced stop of the identified secondary process tree**, including active tasks,
+not a graceful quit or a change to the window's X button. The confirmation
+defaults to No. It identifies the exact profile path, rechecks process identity,
+and refuses ambiguous targets or its own calling process tree. It never stops
+all processes named Codex or ChatGPT and does not elevate automatically.
+
+For a read-only preview: `python close_profile.py alt`. `--apply` explicitly
+executes the stop. See [full-close details and existing installations](docs/CLOSING.md).
+This mitigates background leftovers; it does not repair the app's tray behavior.
 
 No terminal is needed each time. The shortcut discovers the installed app on each
 launch, avoiding a stale versioned path after updates. Keep the checkout and
@@ -51,6 +75,7 @@ python dual.py plan alt
 python dual.py doctor
 python shortcut.py alt
 python shortcut.py alt --apply
+python shortcut.py alt --action close --apply
 ```
 
 Double-click the shortcut for daily use. `shortcut.py` previews by default,
@@ -70,7 +95,8 @@ Windows `.cmd`/`.bat` shims are unsupported; use a direct CLI executable.
 interactive profile menu, shortcuts, rename/delete/close controls, account usage,
 and support for Claude and Codex. Dual focuses on Codex, desktop shortcuts,
 inspectable setup and diagnostics. It does not include that menu, usage display,
-or profile rename/delete/close controls. A working installation does not need
+or profile rename/delete controls. Its separate confirmed full-stop action is
+available without that menu. A working installation does not need
 replacement to benefit from the documented sandbox setup.
 
 Dual removes inherited `CODEX_*`, `OPENAI_*`, and `AZURE_OPENAI_*` environment

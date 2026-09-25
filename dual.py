@@ -15,7 +15,7 @@ import uuid
 from pathlib import Path
 
 CONFIG = Path(__file__).resolve().parent / "dual.local.json"
-VERSION = "0.2.0"
+VERSION = "0.3.0"
 WINDOWS_RESERVED = {"CON", "PRN", "AUX", "NUL", *(f"COM{i}" for i in range(1, 10)), *(f"LPT{i}" for i in range(1, 10))}
 DROP_PREFIXES = ("CODEX_", "OPENAI_", "AZURE_OPENAI_")
 
@@ -228,7 +228,12 @@ def plan(data: dict, alias: str, surface: str, exe: str | None, arguments: list[
         raise DualError(f"Unknown alias: {alias}")
     target = executable(surface, exe)
     profile = data["profiles"][alias]
-    return {"alias": alias, "surface": surface, "argv": [str(target), *arguments],
+    launch_arguments = list(arguments)
+    if surface == "desktop":
+        if any(arg == "--user-data-dir" or arg.startswith("--user-data-dir=") for arg in arguments):
+            raise DualError("The profile owns --user-data-dir; it cannot be overridden")
+        launch_arguments.insert(0, f"--user-data-dir={profile['user_data']}")
+    return {"alias": alias, "surface": surface, "argv": [str(target), *launch_arguments],
             "home": profile["home"], "user_data": profile["user_data"]}
 
 

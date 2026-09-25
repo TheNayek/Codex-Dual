@@ -41,7 +41,7 @@ class DualTests(unittest.TestCase):
         exe.touch()
         code, output, _ = self.invoke("plan", "alt", "--exe", str(exe), "--", "--flag", "two words")
         self.assertEqual(code, 0)
-        self.assertEqual(json.loads(output)["argv"], [str(exe), "--flag", "two words"])
+        self.assertEqual(json.loads(output)["argv"], [str(exe), f"--user-data-dir={root / 'alt' / 'electron'}", "--flag", "two words"])
         self.assertFalse(root.exists())
         self.assertEqual(self.config.read_bytes(), original)
 
@@ -102,7 +102,7 @@ class DualTests(unittest.TestCase):
             code, output, _ = self.invoke("launch", "alt", "--exe", str(exe), "--", "--title", "two words")
         self.assertEqual(code, 0)
         self.assertIn("PID 123", output)
-        self.assertEqual(popen.call_args.args[0], [str(exe), "--title", "two words"])
+        self.assertEqual(popen.call_args.args[0], [str(exe), f"--user-data-dir={root / 'alt' / 'electron'}", "--title", "two words"])
         self.assertFalse(popen.call_args.kwargs["shell"])
         self.assertEqual(popen.call_args.kwargs["env"]["CODEX_HOME"], str(root / "alt" / "home"))
         self.assertTrue((root / "alt" / "electron").is_dir())
@@ -122,6 +122,16 @@ class DualTests(unittest.TestCase):
                 code, _, error = self.invoke("doctor")
                 self.assertEqual(code, 1)
                 self.assertTrue(error.startswith("dual: "))
+
+    def test_profile_marker_cannot_be_overridden(self):
+        root = self.configured()
+        exe = self.base / "ChatGPT.exe"
+        exe.touch()
+        for args in (("--user-data-dir=other",), ("--user-data-dir", "other")):
+            code, _, error = self.invoke("plan", "alt", "--exe", str(exe), "--", *args)
+            self.assertEqual(code, 1)
+            self.assertIn("cannot be overridden", error)
+        self.assertFalse(root.exists())
 
     def test_rejects_roots_user_home_and_reserved_names(self):
         self.assertRaises(dual.DualError, dual.safe_path, str(Path(self.base.anchor)))

@@ -63,29 +63,38 @@ def _exists_without_following(path: Path) -> bool:
         return False
 
 
-def build_plan(alias: str, desktop_dir: Path, *, python_executable: Path | None = None) -> dict:
+def build_plan(alias: str, desktop_dir: Path, *, python_executable: Path | None = None,
+               action: str = "launch", user_data_dir: str | None = None) -> dict:
     """Build a read-only plan; the installed Codex app is discovered at launch time."""
     dual.validate_alias(alias)
-    data = dual.load()
-    if alias not in data["profiles"]:
-        raise dual.DualError(f"Unknown alias: {alias}")
+    if action not in {"launch", "close"}:
+        raise dual.DualError("Unknown shortcut action")
+    if user_data_dir:
+        if action != "close":
+            raise dual.DualError("An explicit profile path is only supported for a close shortcut")
+        dual.safe_path(user_data_dir)
+    else:
+        data = dual.load()
+        if alias not in data["profiles"]:
+            raise dual.DualError(f"Unknown alias: {alias}")
     _plain_directory(desktop_dir)
     interpreter = Path(python_executable or sys.executable).with_name("pythonw.exe")
-    wrapper = Path(__file__).resolve().with_name("desktop_launch.pyw")
+    wrapper = Path(__file__).resolve().with_name("desktop_close.pyw" if action == "close" else "desktop_launch.pyw")
     if not interpreter.is_file():
         raise dual.DualError(f"Windowless Python interpreter not found: {interpreter}")
     if not wrapper.is_file():
         raise dual.DualError(f"Desktop launcher not found: {wrapper}")
-    destination = desktop_dir / f"Codex - {alias}.lnk"
+    destination = desktop_dir / (f"Close Codex - {alias}.lnk" if action == "close" else f"Codex - {alias}.lnk")
     if _exists_without_following(destination):
         raise dual.DualError(f"Shortcut already exists; refusing to overwrite: {destination}")
     return {
         "alias": alias,
         "path": str(destination),
         "target": str(interpreter),
-        "arguments": subprocess.list2cmdline([str(wrapper), alias]),
+        "arguments": subprocess.list2cmdline([str(wrapper), "--user-data-dir", user_data_dir]
+                                            if user_data_dir else [str(wrapper), alias]),
         "working_directory": str(wrapper.parent),
-        "description": f"Launch Codex profile {alias}",
+        "description": f"{'Close completely (confirmation required)' if action == 'close' else 'Launch'} Codex profile {alias}",
     }
 
 
@@ -126,9 +135,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("alias", help="Registered profile alias")
     parser.add_argument("--desktop-dir", type=Path, help="Absolute Desktop directory (default: Windows Desktop)")
     parser.add_argument("--apply", action="store_true", help="Create the shortcut")
+    parser.add_argument("--action", choices=("launch", "close"), default="launch")
+    parser.add_argument("--user-data-dir", help="Exact existing launcher's profile path for --action close")
     args = parser.parse_args(argv)
     try:
-        plan = build_plan(args.alias, args.desktop_dir or desktop_directory())
+        plan = build_plan(args.alias, args.desktop_dir or desktop_directory(),
+                          action=args.action, user_data_dir=args.user_data_dir)
         if args.apply:
             create_shortcut(plan)
         print(json.dumps({**plan, "applied": args.apply}, indent=2))

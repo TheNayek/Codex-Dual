@@ -81,6 +81,8 @@ report that limitation. See [Windows guidance](docs/WINDOWS.md).
 ```text
 python shortcut.py alt
 python shortcut.py alt --apply
+python shortcut.py alt --action close
+python shortcut.py alt --action close --apply
 ```
 
 The first command previews the shortcut; the second creates `Codex - alt.lnk`
@@ -93,6 +95,13 @@ The shortcut runs the included windowless Python launcher, which discovers the
 current app on every launch rather than storing a versioned MSIX path. Verify
 target, arguments and working directory after creation. Errors appear in a dialog.
 Explain that daily use is **double-click the shortcut**, not repeated commands.
+
+Also create the distinct close shortcut. Explain that it confirms before forcibly
+stopping that instance and its active tasks; it does not turn the window X into
+a graceful quit. Never click it or run `close_profile.py --apply` as an installer
+test against the user's live apps. Use only preview to validate the target. For
+an existing upstream installation use the exact launcher's --user-data-dir path,
+which may differ from the Electron environment path; see [closing](docs/CLOSING.md).
 
 ## 4. Handoff and validation
 
@@ -107,7 +116,7 @@ accounts. Record observed results instead of promising all UAC prompts are gone.
 This mitigation is not a universal runtime fix. Live Desktop compatibility remains
 experimental until that installation has been checked.
 
-To undo, remove only the created shortcut and restore only the recorded sandbox
+To undo, remove only the created shortcuts and restore only the recorded sandbox
 selectors after reviewing why they changed. Preserve unrelated later edits and
 existing profiles. Do not silently restore elevated mode known to fail. Keep the
 checkout while the shortcut depends on it.

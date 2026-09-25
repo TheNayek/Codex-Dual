@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.0 — explicit full-stop preview
+
+- Add a separate confirmed close shortcut and read-only process-tree preview.
+- Identify a secondary instance by exact profile marker and executable, with
+  process-identity checks, calling-tree protection and partial-failure reporting.
+- Support an existing upstream launcher's exact profile path without migrating
+  accounts or replacing the launch shortcut. No tray patch or graceful quit claim.
+
 ## 0.2.0 — desktop setup preview
 
 - Make desktop shortcuts the recommended daily entry point; preview and create

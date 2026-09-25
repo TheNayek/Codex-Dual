@@ -1,6 +1,6 @@
 # Dos cuentas de Codex. Dos accesos directos.
 
-v0.2.0 · [English](README.md) · [Origen y atribución](docs/PROVENANCE.md)
+v0.3.0 · [English](README.md) · [Origen y atribución](docs/PROVENANCE.md)
 
 Abre tu cuenta principal como siempre y la segunda desde su propio acceso
 directo. Codex Dual separa los datos de ambas cuentas y prepara la instalación
@@ -21,6 +21,23 @@ el lanzador no cambia los permisos cada vez que abres Codex.
 - **Cuenta principal:** tu icono habitual de Codex.
 - **Segunda cuenta:** el nuevo acceso `Codex - alt`.
 - Inicia sesión por separado. No se copian credenciales.
+
+### Cerrar completamente la cuenta secundaria
+
+Si al cerrar la ventana quedan procesos en segundo plano, usa el acceso
+**Close Codex - alt** después de guardar el trabajo. Se crea durante la
+instalación con `python shortcut.py alt --action close --apply`.
+
+El acceso pide confirmación y **fuerza la terminación de esa instancia y sus
+procesos hijos**, incluidas las tareas activas. No es una salida normal de la
+aplicación ni modifica la X de la ventana. Selecciona la ruta exacta del perfil,
+comprueba la identidad de los procesos y rechaza casos ambiguos. No mata todos
+los procesos por nombre ni intenta elevar permisos automáticamente.
+
+Evita tener que buscarlos en el Administrador de tareas. También sirve para
+instalaciones del lanzador original, indicando su ruta exacta; consulta los
+[detalles de cierre](docs/CLOSING.md). El comando `python close_profile.py alt`
+solo muestra qué cerraría; `--apply` lo ejecuta expresamente.
 
 No hace falta escribir comandos cada vez. El acceso usa un lanzador sin consola
 y busca el ejecutable instalado en cada apertura. Mantén la carpeta del repo y
@@ -51,6 +68,7 @@ python dual.py plan alt
 python dual.py doctor
 python shortcut.py alt
 python shortcut.py alt --apply
+python shortcut.py alt --action close --apply
 ```
 
 `shortcut.py` muestra primero lo que va a crear; con `--apply` crea el acceso

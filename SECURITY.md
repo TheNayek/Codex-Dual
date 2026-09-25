@@ -11,3 +11,9 @@ restrictions. The Python launch and shortcut tools do not change sandbox setting
 Shortcuts execute the local checkout, so keep that checkout and Python in a
 trusted location. Local installation receipts contain paths and prior selector
 values and are excluded from Git.
+
+Full close is explicitly destructive to active work: it forcibly terminates the
+identified app and its descendants after shortcut confirmation or CLI `--apply`.
+It validates profile paths and process creation identities, refuses ambiguous
+targets and protects the calling process ancestry. It never disables UAC, elevates
+itself or stops processes by executable name alone. See [closing limits](docs/CLOSING.md).
