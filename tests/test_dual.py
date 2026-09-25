@@ -176,6 +176,69 @@ class DualTests(unittest.TestCase):
         self.assertEqual(code, 1)
         self.assertIn("synthetic spawn failure", error)
 
+    def test_doctor_missing_home_does_not_create_it(self):
+        root = self.configured()
+        original = self.config.read_bytes()
+        code, output, error = self.invoke("doctor")
+        self.assertEqual(code, 0)
+        self.assertIn("not configured", output)
+        self.assertIn("not verified", output)
+        self.assertEqual(error, "")
+        self.assertFalse(root.exists())
+        self.assertEqual(self.config.read_bytes(), original)
+
+    def test_doctor_reports_mode_without_leaking_or_mutating_config(self):
+        root = self.configured()
+        home = root / "alt" / "home"
+        home.mkdir(parents=True)
+        config = home / "config.toml"
+        marker = "synthetic-private-value"
+        for mode in ("elevated", "unelevated", marker):
+            with self.subTest(mode=mode):
+                raw = f'private_field = "{marker}"\n[windows]\nsandbox = "{mode}"\n'.encode()
+                config.write_bytes(raw)
+                code, output, error = self.invoke("doctor")
+                self.assertEqual(code, 0)
+                self.assertNotIn(marker, output + error)
+                self.assertEqual(config.read_bytes(), raw)
+                if mode == "elevated":
+                    self.assertIn("repeatedly request UAC", output)
+                elif mode == "unelevated":
+                    self.assertIn("windows.sandbox = unelevated", output)
+                    self.assertNotIn("repeatedly request UAC", output)
+                else:
+                    self.assertIn("unrecognized", output)
+
+    def test_doctor_omits_parse_errors_and_refuses_redirected_config(self):
+        root = self.configured()
+        home = root / "alt" / "home"
+        home.mkdir(parents=True)
+        config = home / "config.toml"
+        config.write_text('secret = "synthetic-private-value"\n[broken', encoding="utf-8")
+        code, output, error = self.invoke("doctor")
+        self.assertEqual(code, 0)
+        self.assertIn("invalid", output)
+        self.assertNotIn("synthetic-private-value", output + error)
+        profile = dual.load()["profiles"]["alt"]
+        with mock.patch.object(dual, "safe_path", side_effect=dual.DualError("redirected")), \
+                mock.patch.object(Path, "read_bytes") as read:
+            self.assertIn("redirected", dual.sandbox_diagnostic(profile))
+            read.assert_not_called()
+
+    def test_windows_launch_denial_has_targeted_advice_without_retry(self):
+        self.configured()
+        exe = self.base / "ChatGPT.exe"
+        exe.touch()
+        denial = PermissionError("synthetic launch denial")
+        denial.winerror = 5
+        with mock.patch.object(dual.subprocess, "Popen", side_effect=denial) as popen:
+            code, _, error = self.invoke("launch", "alt", "--exe", str(exe))
+        self.assertEqual(code, 1)
+        self.assertIn("WinError 5", error)
+        self.assertIn("does not diagnose a UAC problem", error)
+        self.assertIn("docs/WINDOWS.md", error)
+        popen.assert_called_once()
+
 
 if __name__ == "__main__":
     unittest.main()

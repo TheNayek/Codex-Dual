@@ -10,11 +10,12 @@ import shutil
 import stat
 import subprocess
 import sys
+import tomllib
 import uuid
 from pathlib import Path
 
 CONFIG = Path(__file__).resolve().parent / "dual.local.json"
-VERSION = "0.1.0"
+VERSION = "0.1.1"
 WINDOWS_RESERVED = {"CON", "PRN", "AUX", "NUL", *(f"COM{i}" for i in range(1, 10)), *(f"LPT{i}" for i in range(1, 10))}
 DROP_PREFIXES = ("CODEX_", "OPENAI_", "AZURE_OPENAI_")
 
@@ -154,6 +155,39 @@ def clean_env(environ: dict[str, str], profile: dict) -> dict[str, str]:
     return result
 
 
+def sandbox_diagnostic(profile: dict) -> str:
+    """Report only the sandbox selector; never open auth files or logs."""
+    config = Path(profile["home"]) / "config.toml"
+    try:
+        safe_path(str(config))
+        raw = config.read_bytes()
+    except FileNotFoundError:
+        return "not configured (Codex may run first-time setup)"
+    except (OSError, DualError):
+        return "unknown (config.toml inaccessible or redirected)"
+    try:
+        parsed = tomllib.loads(raw.decode("utf-8"))
+    except (ValueError, UnicodeError):
+        return "unknown (config.toml invalid; contents omitted)"
+    windows = parsed.get("windows", {})
+    mode = windows.get("sandbox") if isinstance(windows, dict) else None
+    if mode in ("elevated", "unelevated"):
+        return mode
+    return "unspecified or unrecognized (check effective settings in Codex)"
+
+
+def doctor(data: dict) -> None:
+    print(f"Config OK: {len(data['profiles'])} isolated profile(s). Desktop support is experimental.")
+    for alias, profile in data["profiles"].items():
+        mode = sandbox_diagnostic(profile)
+        print(f"{alias}: windows.sandbox = {mode}")
+        if mode == "elevated":
+            print("  If multiple profiles repeatedly request UAC/setup, see docs/WINDOWS.md. "
+                  "Separate homes do not isolate machine-level sandbox provisioning.")
+    print("Only each registered home's config.toml selector was inspected; effective runtime "
+          "overrides and live launch behavior are not verified. No settings were changed.")
+
+
 def desktop_exe() -> Path:
     if os.name != "nt":
         raise DualError("Desktop auto-discovery currently supports Windows; pass --exe for another platform")
@@ -246,7 +280,7 @@ def main(argv: list[str] | None = None) -> int:
                 for alias, profile in data["profiles"].items():
                     print(f"{alias}: home={profile['home']} user-data={profile['user_data']}")
             elif args.command == "doctor":
-                print(f"Config OK: {len(data['profiles'])} isolated profile(s). Desktop support is experimental.")
+                doctor(data)
             else:
                 extra = extra_args[1:] if extra_args and extra_args[0] == "--" else extra_args
                 details = plan(data, args.alias, args.surface, args.exe, extra)
@@ -257,8 +291,15 @@ def main(argv: list[str] | None = None) -> int:
                     for path in (profile["home"], profile["user_data"]):
                         safe_path(path).mkdir(parents=True, exist_ok=True)
                     flags = subprocess.CREATE_NO_WINDOW if os.name == "nt" and args.surface == "desktop" else 0
-                    child = subprocess.Popen(details["argv"], env=clean_env(os.environ, profile),
-                                             creationflags=flags, shell=False)
+                    try:
+                        child = subprocess.Popen(details["argv"], env=clean_env(os.environ, profile),
+                                                 creationflags=flags, shell=False)
+                    except OSError as exc:
+                        if args.surface == "desktop" and getattr(exc, "winerror", None) == 5:
+                            raise DualError("Desktop launch denied (WinError 5). Run plan again after "
+                                            "app updates and check the installed app/ChatGPT.exe. "
+                                            "This alone does not diagnose a UAC problem; see docs/WINDOWS.md.") from exc
+                        raise
                     if args.surface == "cli":
                         return child.wait()
                     print(f"Started {args.alias} ({args.surface}), PID {child.pid}.")

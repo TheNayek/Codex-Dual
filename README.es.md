@@ -1,5 +1,9 @@
 # Dos cuentas de Codex. Dos sesiones independientes de la aplicación.
 
+v0.1.1 · [English](README.md) · [Origen y atribución](docs/PROVENANCE.md)
+
+`doctor` analiza el `config.toml` de cada perfil registrado y muestra únicamente el selector del sandbox, sin cambiar ajustes. Si aparecen avisos UAC repetidos o un error al abrir la aplicación tras actualizarla, consulta la [guía de Windows](docs/WINDOWS.md). Son problemas distintos: el ejecutable correcto ya se usaba en la primera versión; la mitigación del sandbox procede de una investigación separada de la configuración local. El diagnóstico no verifica la configuración efectiva ni garantiza eliminar UAC.
+
 Codex Dual inicia perfiles separados de Codex con Python 3.11 o posterior, sin dependencias. Abre tu aplicación principal como siempre e inicia el perfil `alt` en paralelo. Cada perfil usa rutas distintas para `CODEX_HOME` y los datos de Electron. Inicia sesión en cada uno mediante la interfaz normal de Codex.
 
 **Instalación con Codex:** pega este mensaje en una tarea de Codex:

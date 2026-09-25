@@ -1,6 +1,6 @@
 # Two Codex accounts. Two independent app sessions.
 
-[![Offline tests](https://github.com/TheNayek/Codex-Dual/actions/workflows/test.yml/badge.svg)](https://github.com/TheNayek/Codex-Dual/actions/workflows/test.yml) · v0.1.0 · Companion to [Codex Economy](https://github.com/TheNayek/Codex-Economy)
+[![Offline tests](https://github.com/TheNayek/Codex-Dual/actions/workflows/test.yml/badge.svg)](https://github.com/TheNayek/Codex-Dual/actions/workflows/test.yml) · v0.1.1 · [Español](README.es.md) · Companion to [Codex Economy](https://github.com/TheNayek/Codex-Economy)
 
 Codex Dual is a small, dependency-free Python launcher for separate Codex profiles. Keep opening your main Codex app normally; launch an isolated `alt` beside it. Each launched profile receives its own `CODEX_HOME` and Electron user data path. Sign in to each profile independently through Codex.
 
@@ -38,6 +38,10 @@ The child inherits ordinary OS environment variables but drops inherited `CODEX_
 
 If a newly created Codex home encounters elevated Windows setup problems, select Codex's supported **unelevated** mode for that profile through its normal setup flow. Codex Dual does not change sandbox or UAC settings automatically. Do not use it to weaken security controls.
 
+## Windows troubleshooting
+
+`doctor` parses each registered home's `config.toml` and reports only the sandbox selector, without changing settings. For repeated UAC/setup prompts, launch denial after an update, and restricted-token test failures, see [Windows troubleshooting](docs/WINDOWS.md). This carries forward lessons from the maintainer's two-account setup; it is not a runtime patch or a promise to eliminate UAC.
+
 ## Development
 
 ```text
@@ -51,3 +55,5 @@ Tests use synthetic paths and mocked process launch. The GitHub Actions matrix r
 The scoped `CODEX_HOME` plus `CODEX_ELECTRON_USER_DATA_PATH` mechanism, and the Windows `app/ChatGPT.exe` entry point, were researched with reference to [Zoltak-Dev/ai-multi-instance](https://github.com/Zoltak-Dev/ai-multi-instance) (MIT). Codex Dual is an independently written, Codex-only implementation and does not include code from that project. Thanks to its author for documenting the mechanism.
 
 Codex Dual is independent of OpenAI and is not an official Codex product.
+
+See [origin and scope](docs/PROVENANCE.md) for the upstream contributions, the separate local sandbox mitigation, and what is actually included.
