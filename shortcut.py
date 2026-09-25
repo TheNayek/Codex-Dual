@@ -29,10 +29,12 @@ $link.Save()
 
 
 def _powershell(script: str, *, input_text: str | None = None) -> str:
+    script = ("[Console]::InputEncoding = [System.Text.UTF8Encoding]::new($false); "
+              "[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false); " + script)
     result = subprocess.run(
         ["powershell.exe", "-NoProfile", "-NonInteractive", "-EncodedCommand",
          base64.b64encode(script.encode("utf-16le")).decode("ascii")],
-        input=input_text, capture_output=True, text=True, timeout=20, check=True,
+        input=input_text, capture_output=True, text=True, encoding="utf-8", timeout=20, check=True,
         creationflags=subprocess.CREATE_NO_WINDOW,
     )
     return result.stdout.strip()

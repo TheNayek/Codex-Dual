@@ -21,7 +21,7 @@ class ShortcutTests(unittest.TestCase):
         self.base = Path(__file__).parent / ("shortcut-fixture-" + uuid.uuid4().hex)
         self.base.mkdir()
         self.addCleanup(shutil.rmtree, self.base)
-        self.desktop = self.base / "Desktop"
+        self.desktop = self.base / "Desktop á's space"
         self.desktop.mkdir()
         self.config = self.base / "dual.local.json"
         self.config.write_text(json.dumps({
